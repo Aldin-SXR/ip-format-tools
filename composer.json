@@ -1,6 +1,6 @@
 {
     "name": "aldin-sxr/ip-format-tools",
-    "description": "A collection of utilities for IPv4/IPv6 addresses.",
+    "description": "A collection of utilities for working with IPv4/IPv6 addresses.",
     "type": "library",
     "license": "MIT",
     "authors": [
