@@ -1,0 +1,32 @@
+{
+    "name": "aldin-sxr/ip-format-tools",
+    "description": "A collection of utilities for IPv4/IPv6 addresses.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aldin Kovačević",
+            "email": "aldin.kovacevic.97@gmail.com",
+            "homepage": "https://github.com/Aldin-SXR"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": { },
+    "suggest": {
+        "ext-gmp": "Either GMP or BCMath are required; GMP is preferred, due to speed.",
+        "ext-bcmath": "Either BCMath or GMP are required."
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0",
+        "jms/serializer": "1.7.*",
+        "phpdocumentor/phpdocumentor": "^2.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "IPFormat\\": "src/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --testdox"
+    }
+}

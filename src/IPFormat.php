@@ -1,0 +1,148 @@
+<?php
+
+namespace IPFormat;
+
+class IPFormat {
+
+    /**
+     * IP to long.
+     * Convert a given IP address (v4 or v6) to its 'long integer' representation.
+     * @param string $ip_address IPv4 or IPv6 address.
+     * @static
+     * @return string|int Long integer representation of the address.
+     */
+
+    public static function ip_to_long($ip_address) { 
+        if (!filter_var($ip_address, FILTER_VALIDATE_IP)) {
+            return false;
+        }
+
+        $parts = unpack('N*', inet_pton($ip_address));
+        
+        /* Adjust for IPv4 */
+        if (filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
+            $parts = [ 
+                1 => 0, 
+                2 => 0, 
+                3 => 0, 
+                4 => $parts[1] 
+            ];
+        foreach ($parts as &$part) {
+            /* Convert any unsigned ints to signed from unpack. */
+            if ($part < 0)
+                $part += 4294967296;
+        }
+
+        /* Use GMP if the extension exists; otherwise, try to use BCMath */
+        if (function_exists('gmp_add')) {
+            $add = 'gmp_add';
+            $mul = 'gmp_mul';
+
+        } else if (function_exists('bcmul')) {
+            $add = 'bcadd';
+            $mul = 'bcmul';
+        } else {
+            return false;
+        }
+        
+        /* Perform the operations */
+        $decimal = $parts[4];
+        $decimal = $add($decimal, $mul($parts[3], '4294967296'));
+        $decimal = $add($decimal, $mul($parts[2], '18446744073709551616'));
+        $decimal = $add($decimal, $mul($parts[1], '79228162514264337593543950336'));
+
+        return function_exists('gmp_add') ? gmp_strval($decimal) : $decimal;
+    }
+
+
+    /**
+     * Long to IP.
+     * Convert a long integer to its IPv4 or IPv6 counterpart.
+     * @param string|int Long integer.
+     * @static
+     * @return string IPv4 or IPv6 address.
+     */
+    public static function long_to_ip($long) {
+        if (function_exists('gmp_add')) {
+            $sub = 'gmp_sub';
+            $div = 'gmp_div';
+            $mul = 'gmp_mul';
+        } else if (function_exists('bcmul')) {
+            $sub = 'bcsub';
+            $div = 'bcdiv';
+            $mul = 'bcmul';
+        } else {
+            return false;
+        }
+
+        /* Perform the operations */
+        $parts[1] = $div($long, '79228162514264337593543950336', 0);
+        $long  = $sub($long, $mul($parts[1], '79228162514264337593543950336'));
+        $parts[2] = $div($long, '18446744073709551616', 0);
+        $long  = $sub($long, $mul($parts[2], '18446744073709551616'));
+        $parts[3] = $div($long, '4294967296', 0);
+        $long  = $sub($long, $mul($parts[3], '4294967296'));
+        $parts[4] = $long;
+
+        foreach ($parts as &$part) {
+            /* Convert any signed ints to unsigned for pack */
+            if ($part > 2147483647)
+                $part -= 4294967296;
+        }
+
+        $ip = inet_ntop(pack('N4', $parts[1], $parts[2], $parts[3], $parts[4]));
+        if (strpos($ip, '.') !== false) {
+            return substr($ip, 2);
+        }
+
+        return $ip;
+    }
+
+    /**
+     * IPv4 to IPv6 address.
+     * Convert an IPv4 address to one of the IPv6 formats (compressed, shortened or expanded)
+     * @param string $ip_address An IPv4 address.
+     * @param string $type Type of resulting IPv6 address (compressed by default).
+     */
+    public static function ipv4_to_ipv6($ip_address, $type = 'compressed') {
+        if (!filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return false;
+        }
+
+        $parts = explode('.', $ip_address);
+        foreach ($parts as &$part) {
+            $part = str_pad(dechex($part), 2, '0', STR_PAD_LEFT);
+        }
+
+        switch ($type) {
+            case 'compressed':
+                /* First 16 bytes */
+                $hex1 = ltrim($parts[0] . $parts[1], '0');
+                if ($hex1 === '') {
+                    $hex1 = '0';
+                }
+                /* Last 16 bytes */
+                $hex2 = ltrim($parts[2] . $parts[3], '0');
+                if ($hex2 === '') {
+                    $hex2 = '0';
+                }
+                return '::ffff:' . $hex1 . ':' . $hex2;
+            case 'shortened':
+                /* First 16 bytes */
+                $hex1 = $parts[0] . $parts[1];
+                if ($hex1 === '0000') {
+                    $hex1 = '0';
+                }
+                /* Last 16 bytes */
+                $hex2 = $parts[2] . $parts[3];
+                if ($hex2 === '0000') {
+                    $hex2 = '0';
+                }
+                return '0:0:0:0:0:ffff:' . $hex1 . ':' . $hex2;
+            case 'expanded':
+                return '0000:0000:0000:0000:0000:ffff:' . $parts[0] . $parts[1] . ':' . $parts[2] . $parts[3];
+            default:
+                return false;
+        }
+    }
+}
