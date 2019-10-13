@@ -53,7 +53,7 @@ echo IPFormat::ipv4_to_ipv6('34.26.0.75', 'expanded'); // 0000:0000:0000:0000:00
 
 ## Documentation
 
-Library documentation was generated using [phpDocumentor](https://www.phpdoc.org/), and is available at:
+Library documentation was generated using [phpDocumentor](https://www.phpdoc.org/), and is available at: [https://aldin-sxr.github.io/ip-format-tools/](https://aldin-sxr.github.io/ip-format-tools/)
 
 ## Testing
 
