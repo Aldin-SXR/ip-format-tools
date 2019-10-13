@@ -1,4 +1,5 @@
 # IP Formatting Tools
+[![Build Status](https://travis-ci.com/Aldin-SXR/ip-format-tools.svg?branch=master)](https://travis-ci.com/Aldin-SXR/ip-format-tools)
 
 This is a small collection of useful methods related to working with IP addresses. Right now, the library provides the ability to convert **both IPv4 and IPv6** addresses to long integers, as well as vice versa. Moreover, the library also provides a way to represent IPv4 addresses in IPv6 format (e.g. 34.26.0.75 => *::ffff:221a:4b*)
 
